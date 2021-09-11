@@ -186,6 +186,7 @@ if %value%==1 (
     echo .Net Framework 1.1
 )
 
+rem ===========================================================================
 rem === .Net 1.0
 
 set RQ=reg query "HKLM\Software\Microsoft\.NETFramework\Policy\v1.0\3705" /v "Install"
@@ -193,13 +194,32 @@ set value=0
 %RQ% >nul 2>nul
 if %errorlevel%==0 ( for /f "tokens=3" %%a in ( '%RQ%' ) do set /a value=%%a )
 
-if %value%==1 (
-    set noinst=0
-    echo .Net Framework 1.0
-)
+if %value%==1 ( goto :_10 )
+
+rem === .Net 1.0 alternate check
+
+set RQ=reg query "HKLM\Software\Microsoft\.NETFramework\Policy\v1.0" /v "3705"
+set value=0
+%RQ% >nul 2>nul
+if %errorlevel%==0 ( for /f "tokens=3" %%a in ( '%RQ%' ) do set /a value=%%a )
+
+if not %value%==0 ( goto :_10 )
+
+goto :_t2_no10
+
+:_10
+echo .Net Framework 1.0
+set noinst=0
+goto :_t3
+
+:_t2_no10
+@REM echo No .Net Framework 1.0 detected
+goto :_t3
 
 rem ===========================================================================
 rem If not detected from reg query
+
+:_t3
 
 if %noinst%==1 (
     echo .Net Framework not detected in registry
